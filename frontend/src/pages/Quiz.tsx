@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FadeIn } from "@/components/MotionPrimitives";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CHAKRAS, QUESTIONS, SCORE_OPTIONS, SCORE_LABEL_LEFT, SCORE_LABEL_RIGHT } from "@/types/chakra";
+import { CHAKRAS, QUESTIONS, SCORE_OPTIONS, SCORE_LABELS } from "@/types/chakra";
 
 const TOTAL = QUESTIONS.length;
 
@@ -81,10 +81,10 @@ export default function Quiz() {
                     {/* 5 级评分 - 匹配原站风格 */}
                     <div className="flex items-center gap-1">
                       <span className="shrink-0 text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                        {SCORE_LABEL_LEFT}
+                        完全没有
                       </span>
                       <div className="flex flex-1 justify-center gap-2">
-                        {SCORE_OPTIONS.map((score) => {
+                        {SCORE_OPTIONS.map((score, idx) => {
                           const checked = answers[q.id] === score;
                           return (
                             <button
@@ -92,10 +92,10 @@ export default function Quiz() {
                               type="button"
                               onClick={() => handleChange(q.id, score)}
                               className="cursor-pointer transition-all"
-                              title={`${SCORE_LABEL_LEFT} ${score} ${SCORE_LABEL_RIGHT}`}
+                              title={SCORE_LABELS[idx]}
                             >
                               <div
-                                className="size-7 rounded-full border-2 sm:size-8"
+                                className="flex size-7 items-center justify-center rounded-full border-2 sm:size-8"
                                 style={{
                                   borderColor: checked ? "var(--primary)" : "var(--border)",
                                   backgroundColor: checked ? "var(--primary)" : "transparent",
@@ -103,8 +103,8 @@ export default function Quiz() {
                                 }}
                               >
                                 {checked && (
-                                  <div className="flex size-full items-center justify-center text-[10px] font-bold text-white">
-                                    {score}
+                                  <div className="text-[10px] font-bold text-white">
+                                    {SCORE_LABELS[idx]}
                                   </div>
                                 )}
                               </div>
@@ -113,7 +113,7 @@ export default function Quiz() {
                         })}
                       </div>
                       <span className="shrink-0 text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                        {SCORE_LABEL_RIGHT}
+                        感觉强烈
                       </span>
                     </div>
                   </div>

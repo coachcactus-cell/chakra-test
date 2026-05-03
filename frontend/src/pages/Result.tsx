@@ -338,31 +338,65 @@ export default function Result() {
             style={{ borderColor: "var(--border)", backgroundColor: "var(--muted)" }}
           >
             <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
-              改善建议
+              详细分析与建议
             </h2>
-            <ul className="mt-2 space-y-2 text-xs" style={{ color: "var(--muted-foreground)" }}>
+
+            {results.every((r) => r.status.level === "mid") && (
+              <p className="mt-2 text-xs" style={{ color: "var(--success)" }}>
+                恭喜！你的七个脉轮皆处于适度活跃的状态，请持续保持身心平衡。
+              </p>
+            )}
+
+            <div className="mt-3 space-y-4">
               {results
-                .filter((r) => r.status.level === "low")
+                .filter((r) => r.status.level !== "mid")
                 .map((r) => (
-                  <li key={r.chakra.id}>
-                    <span className="font-medium" style={{ color: "var(--info)" }}>
-                      {r.chakra.nameZh}
-                    </span> 目前不活跃。{r.chakra.advice}
-                  </li>
+                  <div key={r.chakra.id} className="rounded-lg border border-border bg-background p-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <div className="size-2.5 rounded-full" style={{ backgroundColor: r.chakra.color }} />
+                      <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                        {r.chakra.nameZh}
+                      </span>
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                        style={{
+                          backgroundColor: `color-mix(in oklch, ${statusColor[r.status.level]} 15%, transparent)`,
+                          color: statusColor[r.status.level],
+                        }}
+                      >
+                        {r.status.label}
+                      </span>
+                    </div>
+                    <p className="text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                      {r.status.level === "low" ? r.chakra.statusUnder : r.chakra.statusOver}
+                    </p>
+                  </div>
                 ))}
-              {results
-                .filter((r) => r.status.level === "high")
-                .map((r) => (
-                  <li key={r.chakra.id}>
-                    <span className="font-medium" style={{ color: "var(--warning)" }}>
-                      {r.chakra.nameZh}
-                    </span> 目前过度活跃。建议练习平衡的呼吸法与静坐，让能量回到适度状态。
-                  </li>
-                ))}
-              {results.every((r) => r.status.level === "mid") && (
-                <li>恭喜！你的七个脉轮皆处于适度活跃的状态，请持续保持身心平衡。</li>
-              )}
-            </ul>
+            </div>
+
+            {/* 冥想提示 */}
+            {results.some((r) => r.status.level === "low") && (
+              <div className="mt-4 rounded-lg border border-border bg-background p-3">
+                <h3 className="text-xs font-semibold" style={{ color: "var(--primary)" }}>
+                  冥想指引
+                </h3>
+                <div className="mt-2 space-y-2">
+                  {results
+                    .filter((r) => r.status.level === "low")
+                    .map((r) => (
+                      <div key={r.chakra.id} className="text-[11px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                        <span className="font-medium" style={{ color: "var(--foreground)" }}>{r.chakra.nameZh}</span>：
+                        关注{r.chakra.location}，吟诵声音 <span style={{ color: "var(--primary)", fontWeight: 600 }}>{r.chakra.sound}</span>，
+                        阻塞情绪为{r.chakra.demon}。{r.chakra.meditation}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            <p className="mt-3 text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              提示：过度活跃的脉轮通常是补偿不活跃的脉轮。建议优先开启不活跃的脉轮，而非直接抑制过度活跃的脉轮。开启顺序建议从下往上：海底轮 → 本我轮 → 太阳神经丛 → 心轮 → 喉轮 → 眉心轮 → 顶轮。
+            </p>
           </div>
         </FadeIn>
       </div>
