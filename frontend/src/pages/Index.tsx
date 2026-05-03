@@ -104,10 +104,21 @@ export default function Index() {
         </div>
       </section>
 
-      {/* 页脚 - 含二维码 */}
+      {/* 页脚 - 含联系方式二维码 + 网站二维码 */}
       <footer className="border-t border-border px-4 py-6">
-        <div className="flex flex-col items-center gap-3">
-          <img src="/qrcode-generated.png" alt="扫码访问脉轮测试" className="h-28 w-28 rounded-lg" />
+        <div className="flex flex-col items-center gap-4">
+          {/* 网站二维码 - 扫码打开测试 */}
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center gap-1">
+              <img src="/qrcode-generated.png" alt="扫码开始测试" className="h-24 w-24 rounded-lg" />
+              <span className="text-[10px]" style={{ color: "var(--primary)" }}>扫码开始测试</span>
+            </div>
+            {/* 联系方式二维码 */}
+            <div className="flex flex-col items-center gap-1">
+              <img src="/qrcode.jpg" alt="联系我" className="h-24 w-24 rounded-lg" />
+              <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>联系我</span>
+            </div>
+          </div>
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
             脉轮测试 · 参考 Eclectic Energies
           </p>
