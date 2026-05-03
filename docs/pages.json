@@ -1,0 +1,17 @@
+[
+  {
+    "pageKey": "Home",
+    "title": "Home Page",
+    "url": "/"
+  },
+  {
+    "pageKey": "Quiz",
+    "title": "Quiz",
+    "url": "/quiz"
+  },
+  {
+    "pageKey": "Result",
+    "title": "Result",
+    "url": "/result"
+  }
+]
