@@ -61,12 +61,7 @@ export default function LeadCapture() {
       {/* 顶部 */}
       <nav className="border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <div
-            className="flex size-6 items-center justify-center rounded-md text-[10px] font-bold text-white"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            脉
-          </div>
+          <img src="/logo.jpg" alt="Logo" className="h-6 w-auto rounded" />
           <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
             脉轮测试
           </span>

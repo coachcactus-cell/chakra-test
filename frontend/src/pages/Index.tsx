@@ -18,13 +18,7 @@ export default function Index() {
       {/* 顶部导航 - 含 Logo */}
       <nav className="border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          {/* Logo 占位 - 可替换为实际图片 */}
-          <div
-            className="flex size-8 items-center justify-center rounded-lg text-sm font-bold text-white"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            脉
-          </div>
+          <img src="/logo.jpg" alt="Logo" className="h-8 w-auto rounded" />
           <span className="text-lg font-semibold" style={{ color: "var(--primary)" }}>
             脉轮测试
           </span>
@@ -113,13 +107,7 @@ export default function Index() {
       {/* 页脚 - 含二维码 */}
       <footer className="border-t border-border px-4 py-6">
         <div className="flex flex-col items-center gap-3">
-          {/* 二维码占位 */}
-          <div
-            className="flex size-28 items-center justify-center rounded-lg border border-border text-[10px]"
-            style={{ color: "var(--muted-foreground)", backgroundColor: "var(--background)" }}
-          >
-            扫码访问
-          </div>
+          <img src="/qrcode.jpg" alt="扫码访问" className="h-28 w-28 rounded-lg" />
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
             脉轮测试 · 参考 Eclectic Energies
           </p>

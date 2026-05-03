@@ -29,12 +29,7 @@ export default function Quiz() {
       {/* 顶部固定栏 */}
       <nav className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-md px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <div
-            className="flex size-6 items-center justify-center rounded-md text-[10px] font-bold text-white"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            脉
-          </div>
+          <img src="/logo.jpg" alt="Logo" className="h-6 w-auto rounded" />
           <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
             脉轮测试
           </span>
