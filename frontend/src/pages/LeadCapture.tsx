@@ -19,7 +19,7 @@ export default function LeadCapture() {
 
     // 提交到后端 API
     try {
-      await fetch("/api/lead/submit", {
+      await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userInfo),
