@@ -21,7 +21,7 @@ export default function Quiz() {
   const handleSubmit = () => {
     if (answeredCount < TOTAL) return;
     sessionStorage.setItem("chakra_answers", JSON.stringify(answers));
-    navigate("/result");
+    navigate("/lead");
   };
 
   return (

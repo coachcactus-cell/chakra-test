@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Quiz from "./pages/Quiz";
 import Result from "./pages/Result";
+import LeadCapture from "./pages/LeadCapture";
 
 /**
  * Configure TanStack Query client with optimized defaults
@@ -42,6 +43,7 @@ function App() {
           <AnimatedRoutes>
             <Route path="/" data-genie-title="Home Page" data-genie-key="Home" element={<PageTransition transition="slide-up"><Index /></PageTransition>} />
             <Route path="/quiz" data-genie-title="Quiz" data-genie-key="Quiz" element={<PageTransition transition="fade"><Quiz /></PageTransition>} />
+            <Route path="/lead" data-genie-title="LeadCapture" data-genie-key="LeadCapture" element={<PageTransition transition="fade"><LeadCapture /></PageTransition>} />
             <Route path="/result" data-genie-title="Result" data-genie-key="Result" element={<PageTransition transition="fade"><Result /></PageTransition>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" data-genie-key="NotFound" data-genie-title="Not Found" element={<PageTransition transition="fade"><NotFound /></PageTransition>} />
