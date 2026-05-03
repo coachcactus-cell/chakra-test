@@ -93,70 +93,130 @@ export default function Result() {
 
   // 分享（调用系统分享功能）
   const handleShare = useCallback(async () => {
-    if (navigator.share) {
+    const shareData = {
+      title: "我的脉轮能量测试结果",
+      text: resultText,
+    };
+
+    // 检查是否支持 Web Share API
+    if (typeof navigator.share === "function") {
       try {
-        await navigator.share({
-          title: "我的脉轮能量测试结果",
-          text: resultText,
-          url: "https://chakra-test-seven.vercel.app/",
-        });
-      } catch {
-        // 用户取消分享，忽略
+        await navigator.share(shareData);
+        return; // 成功分享，直接返回
+      } catch (err: unknown) {
+        // 如果是用户主动取消，不处理
+        if (err instanceof Error && err.name === "AbortError") return;
+        // 其他错误，走复制
       }
-    } else {
-      // 不支持系统分享，走复制
-      handleCopy();
     }
+    // 不支持或失败，走复制
+    handleCopy();
   }, [resultText, handleCopy]);
 
-  // 保存为图片（截图结果区域）
+  // 保存为 PNG 图片
   const handleSaveImage = useCallback(() => {
-    const resultArea = document.getElementById("result-content");
-    if (!resultArea) return;
+    const width = 600;
+    const rowHeight = 52;
+    const headerHeight = 90;
+    const footerHeight = 50;
+    const height = headerHeight + results.length * rowHeight + footerHeight;
 
-    // 使用 html2canvas 替代方案：生成一个 canvas 截图
-    // 为了不引入额外依赖，用 SVG foreignObject 方式
-    const svgData = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="${200 + results.length * 60}">
-        <style>
-          text { font-family: -apple-system, sans-serif; }
-        </style>
-        <rect width="400" height="${200 + results.length * 60}" fill="#faf9fc"/>
-        <text x="200" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#2d1b69">脉轮能量测试结果</text>
-        <text x="200" y="58" text-anchor="middle" font-size="12" fill="#666">${testDate}${userName ? " | " + userName : ""}</text>
-        <line x1="30" y1="70" x2="370" y2="70" stroke="#e5e5e5" stroke-width="1"/>
-        ${results
-          .map(
-            (r, i) => `
-          <circle cx="50" cy="${100 + i * 55}" r="6" fill="${r.chakra.color}"/>
-          <text x="65" y="${105 + i * 55}" font-size="14" font-weight="bold" fill="#333">${r.chakra.nameZh}</text>
-          <text x="160" y="${105 + i * 55}" font-size="11" fill="#999">${r.chakra.sanskrit}</text>
-          <text x="340" y="${105 + i * 55}" text-anchor="end" font-size="12" font-weight="bold" fill="${
-              r.status.level === "low" ? "#3b82f6" : r.status.level === "high" ? "#f59e0b" : "#22c55e"
-            }">${r.status.label}</text>
-          <rect x="65" y="${115 + i * 55}" width="280" height="8" rx="4" fill="#eee"/>
-          <rect x="65" y="${115 + i * 55}" width="${(r.percentage / 100) * 280}" height="8" rx="4" fill="${
-              r.chakra.color
-            }" opacity="0.85"/>
-          <text x="350" y="${122 + i * 55}" text-anchor="end" font-size="10" fill="#999">${r.score}/${MAX_PER_CHAKRA}</text>
-        `
-          )
-          .join("")}
-        <text x="200" y="${140 + results.length * 55}" text-anchor="middle" font-size="10" fill="#999">chakra-test-seven.vercel.app</text>
-      </svg>
-    `;
+    const canvas = document.createElement("canvas");
+    canvas.width = width * 2; // 2x for retina
+    canvas.height = height * 2;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
+    ctx.scale(2, 2);
 
-    // 下载 SVG
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `脉轮测试结果_${new Date().toISOString().slice(0, 10)}.svg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // 背景
+    ctx.fillStyle = "#faf9fc";
+    ctx.fillRect(0, 0, width, height);
+
+    // 标题
+    ctx.fillStyle = "#2d1b69";
+    ctx.font = "bold 22px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("脉轮能量测试结果", width / 2, 35);
+
+    // 日期和姓名
+    ctx.fillStyle = "#888";
+    ctx.font = "12px -apple-system, sans-serif";
+    ctx.fillText(`${testDate}${userName ? " | " + userName : ""}`, width / 2, 58);
+
+    // 分割线
+    ctx.strokeStyle = "#e5e5e5";
+    ctx.beginPath();
+    ctx.moveTo(30, 72);
+    ctx.lineTo(width - 30, 72);
+    ctx.stroke();
+
+    // 每个脉轮
+    results.forEach((r, i) => {
+      const y = headerHeight + i * rowHeight;
+
+      // 圆点
+      ctx.beginPath();
+      ctx.arc(45, y + 8, 5, 0, Math.PI * 2);
+      ctx.fillStyle = r.chakra.color;
+      ctx.fill();
+
+      // 脉轮名
+      ctx.fillStyle = "#333";
+      ctx.font = "bold 14px -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(r.chakra.nameZh, 58, y + 12);
+
+      // 梵文名
+      ctx.fillStyle = "#aaa";
+      ctx.font = "10px -apple-system, sans-serif";
+      ctx.fillText(r.chakra.sanskrit, 120, y + 12);
+
+      // 状态标签
+      ctx.fillStyle = r.status.level === "low" ? "#3b82f6" : r.status.level === "high" ? "#f59e0b" : "#22c55e";
+      ctx.font = "bold 11px -apple-system, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(r.status.label, width - 45, y + 12);
+
+      // 能量条背景
+      ctx.fillStyle = "#eee";
+      ctx.beginPath();
+      ctx.roundRect(58, y + 22, width - 130, 8, 4);
+      ctx.fill();
+
+      // 能量条
+      ctx.fillStyle = r.chakra.color;
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.roundRect(58, y + 22, Math.max(4, ((width - 130) * r.percentage) / 100), 8, 4);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // 分数
+      ctx.fillStyle = "#999";
+      ctx.font = "10px -apple-system, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(`${r.score}/${MAX_PER_CHAKRA}`, width - 45, y + 30);
+    });
+
+    // 底部
+    ctx.fillStyle = "#bbb";
+    ctx.font = "10px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("chakra-test-seven.vercel.app", width / 2, height - 20);
+
+    // 转换为 PNG 并下载
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `脉轮测试_${new Date().toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, "image/png");
   }, [results, testDate, userName]);
 
   if (results.length === 0) {
