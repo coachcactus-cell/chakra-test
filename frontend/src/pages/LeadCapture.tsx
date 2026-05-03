@@ -11,17 +11,22 @@ export default function LeadCapture() {
   const [contactType, setContactType] = useState<"wechat" | "email">("wechat");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim() || !contact.trim()) return;
 
-    // 保存用户信息到 sessionStorage
     const userInfo = { name: name.trim(), contactType, contact: contact.trim(), timestamp: new Date().toISOString() };
     sessionStorage.setItem("chakra_user_info", JSON.stringify(userInfo));
 
-    // 同时保存到 localStorage 作为本地备份（方便你日后导出）
-    const leads = JSON.parse(localStorage.getItem("chakra_leads") || "[]");
-    leads.push(userInfo);
-    localStorage.setItem("chakra_leads", JSON.stringify(leads));
+    // 提交到后端 API
+    try {
+      await fetch("/api/lead/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userInfo),
+      });
+    } catch {
+      // 网络失败也不影响用户查看结果
+    }
 
     setSubmitted(true);
   };
