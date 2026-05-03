@@ -107,7 +107,7 @@ export default function Index() {
       {/* 页脚 - 含二维码 */}
       <footer className="border-t border-border px-4 py-6">
         <div className="flex flex-col items-center gap-3">
-          <img src="/qrcode.jpg" alt="扫码访问" className="h-28 w-28 rounded-lg" />
+          <img src="/qrcode-generated.png" alt="扫码访问脉轮测试" className="h-28 w-28 rounded-lg" />
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
             脉轮测试 · 参考 Eclectic Energies
           </p>
