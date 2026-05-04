@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CHAKRAS, QUESTIONS, calcChakraScore, getChakraStatus, MAX_SCORE, QUESTIONS_PER_CHAKRA } from "@/types/chakra";
 
-const MAX_PER_CHAKRA = QUESTIONS_PER_CHAKRA * MAX_SCORE; // 40
+// 分数范围 -16 到 +16，映射到 0-100%
+const MIN_SCORE = QUESTIONS_PER_CHAKRA * (-MAX_SCORE); // -16
+const MAX_SCORE_TOTAL = QUESTIONS_PER_CHAKRA * MAX_SCORE; // +16
 
 interface ChakraResult {
   chakra: (typeof CHAKRAS)[number];
@@ -42,9 +44,10 @@ export default function Result() {
 
     return CHAKRAS.map((chakra) => {
       const qs = QUESTIONS.filter((q) => q.chakraId === chakra.id);
-      const answered = qs.filter((q) => answers[q.id] != null && answers[q.id] > 0).length;
+      const answered = qs.filter((q) => answers[q.id] !== undefined && answers[q.id] !== null).length;
       const score = calcChakraScore(chakra.id, answers);
-      const percentage = answered > 0 ? Math.round((score / MAX_PER_CHAKRA) * 100) : 0;
+      // 将 -16~+16 映射到 0~100%
+      const percentage = answered > 0 ? Math.round(((score - MIN_SCORE) / (MAX_SCORE_TOTAL - MIN_SCORE)) * 100) : 0;
       const status = getChakraStatus(score, answered);
       return { chakra, score, percentage, status };
     });
@@ -58,7 +61,7 @@ export default function Result() {
       userName ? `👤 ${userName}` : "",
       "",
       ...results.map((r) =>
-        `${r.chakra.nameZh}（${r.chakra.sanskrit}）: ${r.status.label} ${r.percentage}% (${r.score}/${MAX_PER_CHAKRA})`
+        `${r.chakra.nameZh}（${r.chakra.sanskrit}）: ${r.status.label} ${r.percentage}% (得分: ${r.score})`
       ),
       "",
       "📊 详细分析：",
@@ -196,7 +199,7 @@ export default function Result() {
       ctx.fillStyle = "#999";
       ctx.font = "10px -apple-system, sans-serif";
       ctx.textAlign = "right";
-      ctx.fillText(`${r.score}/${MAX_PER_CHAKRA}`, width - 45, y + 30);
+      ctx.fillText(`${r.percentage}%`, width - 45, y + 30);
     });
 
     // 底部
@@ -323,7 +326,7 @@ export default function Result() {
                     {r.chakra.description}
                   </p>
                   <span className="text-[10px] tabular-nums" style={{ color: "var(--muted-foreground)" }}>
-                    {r.score}/{MAX_PER_CHAKRA}
+                    {r.chakra.nameZh} {r.percentage}%
                   </span>
                 </div>
               </CardContent>
