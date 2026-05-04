@@ -5,6 +5,11 @@
     "url": "/"
   },
   {
+    "pageKey": "LeadCapture",
+    "title": "LeadCapture",
+    "url": "/lead"
+  },
+  {
     "pageKey": "Quiz",
     "title": "Quiz",
     "url": "/quiz"

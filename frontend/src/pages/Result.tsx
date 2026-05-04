@@ -94,133 +94,152 @@ export default function Result() {
     }
   }, [resultText]);
 
-  // 分享（调用系统分享功能）
-  const handleShare = useCallback(async () => {
-    const shareData = {
-      title: "我的脉轮能量测试结果",
-      text: resultText,
-    };
+  // 生成 PNG Blob（保存和分享共用）
+  const generateImageBlob = useCallback((): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const width = 600;
+      const rowHeight = 52;
+      const headerHeight = 90;
+      const footerHeight = 50;
+      const height = headerHeight + results.length * rowHeight + footerHeight;
 
+      const canvas = document.createElement("canvas");
+      canvas.width = width * 2; // 2x for retina
+      canvas.height = height * 2;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve(null); return; }
+
+      ctx.scale(2, 2);
+
+      // 背景
+      ctx.fillStyle = "#faf9fc";
+      ctx.fillRect(0, 0, width, height);
+
+      // 标题
+      ctx.fillStyle = "#2d1b69";
+      ctx.font = "bold 22px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("脉轮能量测试结果", width / 2, 35);
+
+      // 日期和姓名
+      ctx.fillStyle = "#888";
+      ctx.font = "12px -apple-system, sans-serif";
+      ctx.fillText(`${testDate}${userName ? " | " + userName : ""}`, width / 2, 58);
+
+      // 分割线
+      ctx.strokeStyle = "#e5e5e5";
+      ctx.beginPath();
+      ctx.moveTo(30, 72);
+      ctx.lineTo(width - 30, 72);
+      ctx.stroke();
+
+      // 每个脉轮
+      results.forEach((r, i) => {
+        const y = headerHeight + i * rowHeight;
+
+        // 圆点
+        ctx.beginPath();
+        ctx.arc(45, y + 8, 5, 0, Math.PI * 2);
+        ctx.fillStyle = r.chakra.color;
+        ctx.fill();
+
+        // 脉轮名
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 14px -apple-system, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(r.chakra.nameZh, 58, y + 12);
+
+        // 梵文名
+        ctx.fillStyle = "#aaa";
+        ctx.font = "10px -apple-system, sans-serif";
+        ctx.fillText(r.chakra.sanskrit, 120, y + 12);
+
+        // 状态标签
+        ctx.fillStyle = r.status.level === "low" ? "#3b82f6" : r.status.level === "high" ? "#f59e0b" : "#22c55e";
+        ctx.font = "bold 11px -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(r.status.label, width - 45, y + 12);
+
+        // 能量条背景
+        ctx.fillStyle = "#eee";
+        ctx.beginPath();
+        ctx.roundRect(58, y + 22, width - 130, 8, 4);
+        ctx.fill();
+
+        // 能量条
+        ctx.fillStyle = r.chakra.color;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.roundRect(58, y + 22, Math.max(4, ((width - 130) * r.percentage) / 100), 8, 4);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // 分数
+        ctx.fillStyle = "#999";
+        ctx.font = "10px -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`${r.percentage}%`, width - 45, y + 30);
+      });
+
+      // 底部
+      ctx.fillStyle = "#bbb";
+      ctx.font = "10px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("chakra-test-seven.vercel.app", width / 2, height - 20);
+
+      canvas.toBlob((blob) => resolve(blob), "image/png");
+    });
+  }, [results, testDate, userName]);
+
+  // 分享（优先分享图片，fallback 到纯文字复制）
+  const handleShare = useCallback(async () => {
     // 检查是否支持 Web Share API
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share(shareData);
-        return; // 成功分享，直接返回
+        // 尝试生成图片并分享
+        const blob = await generateImageBlob();
+        if (blob && typeof navigator.canShare === "function") {
+          const file = new File([blob], "脉轮测试结果.png", { type: "image/png" });
+          const shareDataWithImage = {
+            title: "我的脉轮能量测试结果",
+            text: resultText,
+            files: [file],
+          };
+          // 检查是否支持分享文件
+          if (navigator.canShare(shareDataWithImage)) {
+            await navigator.share(shareDataWithImage);
+            return;
+          }
+        }
+        // 不支持图片分享，尝试纯文字分享
+        await navigator.share({
+          title: "我的脉轮能量测试结果",
+          text: resultText,
+        });
+        return;
       } catch (err: unknown) {
-        // 如果是用户主动取消，不处理
+        // 用户主动取消
         if (err instanceof Error && err.name === "AbortError") return;
         // 其他错误，走复制
       }
     }
-    // 不支持或失败，走复制
+    // 不支持 Web Share API，走复制
     handleCopy();
-  }, [resultText, handleCopy]);
+  }, [resultText, handleCopy, generateImageBlob]);
 
   // 保存为 PNG 图片
-  const handleSaveImage = useCallback(() => {
-    const width = 600;
-    const rowHeight = 52;
-    const headerHeight = 90;
-    const footerHeight = 50;
-    const height = headerHeight + results.length * rowHeight + footerHeight;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width * 2; // 2x for retina
-    canvas.height = height * 2;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.scale(2, 2);
-
-    // 背景
-    ctx.fillStyle = "#faf9fc";
-    ctx.fillRect(0, 0, width, height);
-
-    // 标题
-    ctx.fillStyle = "#2d1b69";
-    ctx.font = "bold 22px -apple-system, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("脉轮能量测试结果", width / 2, 35);
-
-    // 日期和姓名
-    ctx.fillStyle = "#888";
-    ctx.font = "12px -apple-system, sans-serif";
-    ctx.fillText(`${testDate}${userName ? " | " + userName : ""}`, width / 2, 58);
-
-    // 分割线
-    ctx.strokeStyle = "#e5e5e5";
-    ctx.beginPath();
-    ctx.moveTo(30, 72);
-    ctx.lineTo(width - 30, 72);
-    ctx.stroke();
-
-    // 每个脉轮
-    results.forEach((r, i) => {
-      const y = headerHeight + i * rowHeight;
-
-      // 圆点
-      ctx.beginPath();
-      ctx.arc(45, y + 8, 5, 0, Math.PI * 2);
-      ctx.fillStyle = r.chakra.color;
-      ctx.fill();
-
-      // 脉轮名
-      ctx.fillStyle = "#333";
-      ctx.font = "bold 14px -apple-system, sans-serif";
-      ctx.textAlign = "left";
-      ctx.fillText(r.chakra.nameZh, 58, y + 12);
-
-      // 梵文名
-      ctx.fillStyle = "#aaa";
-      ctx.font = "10px -apple-system, sans-serif";
-      ctx.fillText(r.chakra.sanskrit, 120, y + 12);
-
-      // 状态标签
-      ctx.fillStyle = r.status.level === "low" ? "#3b82f6" : r.status.level === "high" ? "#f59e0b" : "#22c55e";
-      ctx.font = "bold 11px -apple-system, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(r.status.label, width - 45, y + 12);
-
-      // 能量条背景
-      ctx.fillStyle = "#eee";
-      ctx.beginPath();
-      ctx.roundRect(58, y + 22, width - 130, 8, 4);
-      ctx.fill();
-
-      // 能量条
-      ctx.fillStyle = r.chakra.color;
-      ctx.globalAlpha = 0.85;
-      ctx.beginPath();
-      ctx.roundRect(58, y + 22, Math.max(4, ((width - 130) * r.percentage) / 100), 8, 4);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      // 分数
-      ctx.fillStyle = "#999";
-      ctx.font = "10px -apple-system, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(`${r.percentage}%`, width - 45, y + 30);
-    });
-
-    // 底部
-    ctx.fillStyle = "#bbb";
-    ctx.font = "10px -apple-system, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("chakra-test-seven.vercel.app", width / 2, height - 20);
-
-    // 转换为 PNG 并下载
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `脉轮测试_${new Date().toISOString().slice(0, 10)}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, "image/png");
-  }, [results, testDate, userName]);
+  const handleSaveImage = useCallback(async () => {
+    const blob = await generateImageBlob();
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `脉轮测试_${new Date().toISOString().slice(0, 10)}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, [generateImageBlob]);
 
   if (results.length === 0) {
     return (
